@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>26 va 27-darslar: Interaktiv CSS Trenajyor</title>
+  <style>
+    :root {
+      --bg-page: #f1f5f9;
+      --bg-card: #ffffff;
+      --bg-sub: #f8fafc;
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --accent-color: #2563eb;
+      --accent-soft: rgba(37, 99, 235, 0.12);
+      --border-color: #cbd5e1;
+      --success: #16a34a;
+      --error: #dc2626;
+      --radius-md: 12px;
+    }
+
+    [data-theme="dark"] {
+      --bg-page: #0f172a;
+      --bg-card: #1e293b;
+      --bg-sub: #0b1120;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-color: #38bdf8;
+      --accent-soft: rgba(56, 189, 248, 0.15);
+      --border-color: #334155;
+    }
+
+    [data-theme="neon"] {
+      --bg-page: #090014;
+      --bg-card: #160029;
+      --bg-sub: #0d001a;
+      --text-main: #fdf4ff;
+      --text-muted: #d8b4fe;
+      --accent-color: #f43f5e;
+      --accent-soft: rgba(244, 63, 94, 0.2);
+      --border-color: #a855f7;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background-color: var(--bg-page);
+      color: var(--text-main);
+      line-height: 1.5;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    /* TOP NAVBAR */
+    .top-bar {
+      background: var(--bg-card);
+      border-bottom: 2px solid var(--border-color);
+      padding: 12px 4vw;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .nav-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    .tab-btn {
+      padding: 9px 16px;
+      border-radius: 8px;
+      border: 2px solid var(--border-color);
+      background: var(--bg-sub);
+      color: var(--text-main);
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .tab-btn.active {
+      background: var(--accent-color);
+      color: #fff;
+      border-color: var(--accent-color);
+    }
+
+    .score-badge {
+      background: var(--accent-soft);
+      color: var(--accent-color);
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-weight: 800;
+      font-size: 0.95rem;
+      border: 1px solid var(--accent-color);
+    }
+
+    .theme-btn {
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-sub);
+      color: var(--text-main);
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    /* SECTIONS */
+    .lesson-section {
+      display: none;
+      max-width: 1150px;
+      margin: 25px auto;
+      padding: 0 20px 60px;
+    }
+    .lesson-section.active { display: block; }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(460px, 1fr));
+      gap: 20px;
+    }
+
+    @media (max-width: 520px) {
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.04);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card h3 { margin: 0; color: var(--accent-color); font-size: 1.05rem; }
+
+    .status-pill {
+      font-size: 0.78rem;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-weight: 700;
+      background: var(--bg-sub);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+    }
+    .status-pill.passed {
+      background: rgba(22, 163, 74, 0.15);
+      border-color: var(--success);
+      color: var(--success);
+    }
+
+    .task-desc { font-size: 0.9rem; color: var(--text-muted); margin: 0; }
+
+    /* PREVIEW & CODE EDITOR */
+    .preview-box {
+      padding: 16px;
+      background: var(--bg-sub);
+      border: 1px dashed var(--border-color);
+      border-radius: 8px;
+      min-height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .code-editor {
+      width: 100%;
+      min-height: 115px;
+      background: #1e1e2e;
+      color: #cdd6f4;
+      font-family: 'Fira Code', 'Consolas', monospace;
+      font-size: 0.88rem;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #313244;
+      resize: vertical;
+      line-height: 1.45;
+      tab-size: 2;
+    }
+
+    .code-editor:focus {
+      outline: 2px solid var(--accent-color);
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .btn-check {
+      background: var(--accent-color);
+      color: #fff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .btn-check:hover { opacity: 0.9; }
+
+    .btn-reset {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid var(--border-color);
+      padding: 7px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+
+    .feedback {
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 8px 12px;
+      border-radius: 6px;
+      display: none;
+    }
+    .feedback.ok {
+      display: block;
+      background: rgba(22, 163, 74, 0.15);
+      color: var(--success);
+      border: 1px solid var(--success);
+    }
+    .feedback.err {
+      display: block;
+      background: rgba(220, 38, 38, 0.12);
+      color: var(--error);
+      border: 1px solid var(--error);
+    }
+
+    /* SPECIFICITY CALCULATOR BOX */
+    .calc-box {
+      background: var(--bg-card);
+      border: 2px solid var(--accent-color);
+      border-radius: var(--radius-md);
+      padding: 18px;
+      margin-bottom: 24px;
+    }
+    .calc-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+    .calc-input {
+      flex: 1;
+      min-width: 220px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-sub);
+      color: var(--text-main);
+      font-family: monospace;
+      font-size: 1rem;
+    }
+    .spec-result {
+      padding: 10px 16px;
+      background: var(--accent-soft);
+      color: var(--accent-color);
+      border-radius: 8px;
+      font-weight: 800;
+      font-family: monospace;
+      font-size: 1rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="top-bar">
+    <div class="nav-tabs">
+      <button class="tab-btn active" onclick="openLesson('lesson26', this)">🔧 26-dars (10 ta masala)</button>
+      <button class="tab-btn" onclick="openLesson('lesson27', this)">🎨 27-dars (Birliklar & Variables)</button>
+    </div>
+
+    <div class="score-badge" id="total-score">Natija: 0 / 14</div>
+
+    <div style="display:flex; gap:6px;">
+      <button class="theme-btn" onclick="setTheme('light')">☀️ Light</button>
+      <button class="theme-btn" onclick="setTheme('dark')">🌙 Dark</button>
+      <button class="theme-btn" onclick="setTheme('neon')">⚡ Neon</button>
+    </div>
+  </nav>
+
+  <!-- =======================================================
+       26-DARS: CASCADE, SPECIFICITY, INHERITANCE
+  ======================================================= -->
+  <section id="lesson26" class="lesson-section active">
+    
+    <!-- JONLI SPECIFICITY KALKULYATOR -->
+    <div class="calc-box">
+      <h3 style="margin:0; color:var(--accent-color);">🎤 Jonli Specificity Ball Hisoblagich</h3>
+      <p style="margin:4px 0 0; font-size:0.9rem; color:var(--text-muted);">
+        Istalgan CSS selektorni yozing (masalan: <code>#header .nav ul li.active a</code>) — ball avtomatik hisoblanadi:
+      </p>
+      <div class="calc-row">
+        <input type="text" id="spec-input" class="calc-input" value="#nav .menu li.active a" oninput="calculateSpec()">
+        <div class="spec-result" id="spec-output">(ID: 1, Class: 2, Tag: 2) → Ball: 122</div>
+      </div>
+    </div>
+
+    <div class="grid-2" id="tasks-26-container"></div>
+  </section>
+
+  <!-- =======================================================
+       27-DARS: BIRLIKLAR, RANGLAR, CSS VARIABLES
+  ======================================================= -->
+  <section id="lesson27" class="lesson-section">
+    <div class="calc-box">
+      <h3 style="margin:0; color:var(--accent-color);">🎨 27-dars: Jonli Kod Yozish va Tekshirish</h3>
+      <p style="margin:4px 0 0; font-size:0.9rem; color:var(--text-muted);">
+        Quyidagi 4 ta amaliy topshiriqda <code>rem</code>, <code>em</code>, <code>%</code>, <code>rgba/hsl</code> va <code>var()</code> o'zgaruvchilarini yozib tekshiring.
+      </p>
+    </div>
+
+    <div class="grid-2" id="tasks-27-container"></div>
+  </section>
+
+  <script>
+    /* =======================================================
+       MASALALAR BAZASI (26-DARS: 10 TA + 27-DARS: 4 TA)
+    ======================================================= */
+    const tasks26 = [
+      {
+        id: 't26_1',
+        title: '1. Tartib qoidasi (Source Order)',
+        desc: 'Tugma <b>yashil (green)</b> bo‘lishi kerak. Bir xil ballga ega selektorlarda pastdagisi yutadi.',
+        html: `<button class="btn-1" style="color:white; padding:8px 16px; border:none; border-radius:6px;">Yashil tugma</button>`,
+        initialCss: `.btn-1 { background-color: green; }\n.btn-1 { background-color: red; }`,
+        check: (el) => {
+          const bg = getComputedStyle(el.querySelector('.btn-1')).backgroundColor;
+          return bg === 'rgb(0, 128, 0)'
+            ? { ok: true, msg: 'Ajoyib! Tartib qoidasini to‘g‘ri hal qildingiz.' }
+            : { ok: false, msg: 'Hali ham qizil. Ikkinchi qator birinchisini bosib ketyapti.' };
+        }
+      },
+      {
+        id: 't26_2',
+        title: '2. Class vs ID to‘qnashuvi',
+        desc: 'Quti fonini <b>ko‘k (blue)</b> qiling. ID (1,0,0) Class (0,1,0) dan kuchli ekanini unutmang.',
+        html: `<div id="box-2" class="blue-box" style="color:white; padding:10px 16px; border-radius:6px;">Meni ko‘k qiling</div>`,
+        initialCss: `#box-2 { background-color: crimson; }\n.blue-box { background-color: blue; }`,
+        check: (el) => {
+          const bg = getComputedStyle(el.querySelector('#box-2')).backgroundColor;
+          return bg === 'rgb(0, 0, 255)'
+            ? { ok: true, msg: 'To‘g‘ri! Specificity muammosi yechildi.' }
+            : { ok: false, msg: 'Quti hali ko‘k emas. #box-2 ustunlik qilyapti.' };
+        }
+      },
+      {
+        id: 't26_3',
+        title: '3. Inline Style ustunligi (1,0,0,0)',
+        desc: 'HTML ichida <code>style="color: orange"</code> yozilgan. CSS orqali matnni <b>binafsha (purple)</b> qiling.',
+        html: `<p class="text-3" style="color: orange; font-weight:bold; margin:0;">Men purple bo‘lishim kerak</p>`,
+        initialCss: `.text-3 {\n  color: purple;\n}`,
+        check: (el) => {
+          const c = getComputedStyle(el.querySelector('.text-3')).color;
+          return c === 'rgb(128, 0, 128)'
+            ? { ok: true, msg: 'Zo‘r! Inline style ni !important bilan yengdingiz.' }
+            : { ok: false, msg: 'Matn hali orange. Inline style ni yengish uchun !important kerak.' };
+        }
+      },
+      {
+        id: 't26_4',
+        title: '4. Murakkab selektor balli (0,2,0 vs 0,1,0)',
+        desc: '<code>.highlight</code> klassi matnni <b>qizil (red)</b> qilishi kerak. Selektor ballini oshiring.',
+        html: `<div class="parent-4"><p class="child-4 highlight" style="font-weight:bold; margin:0;">Meni qizil qiling</p></div>`,
+        initialCss: `.parent-4 .child-4 { color: teal; }\n.highlight { color: red; }`,
+        check: (el) => {
+          const c = getComputedStyle(el.querySelector('.highlight')).color;
+          return c === 'rgb(255, 0, 0)'
+            ? { ok: true, msg: 'Ballar tenglashdi yoki oshdi — matn qizil!' }
+            : { ok: false, msg: '.parent-4 .child-4 (0,2,0) hali ham .highlight (0,1,0) dan kuchli.' };
+        }
+      },
+      {
+        id: 't26_5',
+        title: '5. !important tuzog‘i',
+        desc: 'Quti fonini <b>tilla rang (gold)</b> qiling.',
+        html: `<div id="gold-id" class="black-box" style="padding:10px 16px; border-radius:6px;">Gold bo‘lishim kerak</div>`,
+        initialCss: `.black-box { background-color: black !important; color: white; }\n#gold-id { background-color: gold; color: black; }`,
+        check: (el) => {
+          const bg = getComputedStyle(el.querySelector('#gold-id')).backgroundColor;
+          return bg === 'rgb(255, 215, 0)'
+            ? { ok: true, msg: 'Barakalla! !important qoidasini to‘g‘ri ishlatdingiz.' }
+            : { ok: false, msg: 'Quti hali qora. #gold-id ga ham !important bering yoki birinchisidan olib tashlang.' };
+        }
+      },
+      {
+        id: 't26_6',
+        title: '6. Inheritance (Meros olish)',
+        desc: '<code>.parent-6</code> ga yashil matn rangi (<code>color: green</code>) bering — ichidagi <code>&lt;p&gt;</code> ham yashil bo‘lsin.',
+        html: `<div class="parent-6"><p style="margin:0; font-weight:bold;">Otamdan rang meros olaman</p></div>`,
+        initialCss: `.parent-6 {\n  /* color yozing */\n}`,
+        check: (el) => {
+          const c = getComputedStyle(el.querySelector('.parent-6 p')).color;
+          return c === 'rgb(0, 128, 0)'
+            ? { ok: true, msg: 'To‘g‘ri! color xususiyati bolaga avtomatik meros o‘tdi.' }
+            : { ok: false, msg: 'Paragraf hali green rangda emas.' };
+        }
+      },
+      {
+        id: 't26_7',
+        title: '7. Majburiy meros (inherit)',
+        desc: '<code>border</code> meros o‘tmaydi. <code>.child-7</code> ga <code>border: inherit;</code> yozib, otasining ramkasini oling.',
+        html: `<div class="parent-7" style="border: 3px dashed red; padding:10px;"><div class="child-7" style="padding:6px;">Ramkani meros olaman</div></div>`,
+        initialCss: `.child-7 {\n  border: none;\n}`,
+        check: (el) => {
+          const bs = getComputedStyle(el.querySelector('.child-7')).borderStyle;
+          return bs === 'dashed'
+            ? { ok: true, msg: 'Ajoyib! inherit meros o‘tmaydigan borderni ham olib berdi.' }
+            : { ok: false, msg: '.child-7 da hali dashed border ko‘rinmayapti.' };
+        }
+      },
+      {
+        id: 't26_8',
+        title: '8. Tugma (Button) shriftini meros olish',
+        desc: 'Tugmalar shriftni meros olmaydi. Tugmaga <code>font-size: inherit;</code> yozing (22px bo‘lsin).',
+        html: `<div style="font-size: 22px;">Ota 22px <button class="btn-8">Tugma</button></div>`,
+        initialCss: `.btn-8 {\n  /* font-size ni meros qilib oling */\n}`,
+        check: (el) => {
+          const fs = getComputedStyle(el.querySelector('.btn-8')).fontSize;
+          return fs === '22px'
+            ? { ok: true, msg: 'To‘g‘ri! Tugma endi otasi bilan bir xil 22px.' }
+            : { ok: false, msg: `Hozir tugma shrifti ${fs}, 22px bo‘lishi kerak.` };
+        }
+      },
+      {
+        id: 't26_9',
+        title: '9. Merosni bekor qilish (initial)',
+        desc: 'Ota element qizil, lekin <code>.reset-p</code> ga <code>color: initial;</code> yozib brauzerning asl qora rangiga qaytaring.',
+        html: `<div style="color: red;"><p class="reset-p" style="margin:0; font-weight:bold;">Meni qora (initial) qiling</p></div>`,
+        initialCss: `.reset-p {\n  /* color: initial; yozing */\n}`,
+        check: (el) => {
+          const c = getComputedStyle(el.querySelector('.reset-p')).color;
+          return c === 'rgb(0, 0, 0)'
+            ? { ok: true, msg: 'Zo‘r! initial merosni to‘xtatib, standart qora rangni tikladi.' }
+            : { ok: false, msg: 'Matn hali qizil. color: initial; yozing.' };
+        }
+      },
+      {
+        id: 't26_10',
+        title: '10. Tag vs Class (0,0,1 vs 0,1,0)',
+        desc: '<code>p</code> tegi va <code>.badge</code> klassi berilgan. Matnni <b>yashil (green)</b> qiling.',
+        html: `<p class="badge" style="font-weight:bold; margin:0;">Specificity final sinovi</p>`,
+        initialCss: `p { color: red; }\n.badge { /* yashil rang bering */ }`,
+        check: (el) => {
+          const c = getComputedStyle(el.querySelector('.badge')).color;
+          return c === 'rgb(0, 128, 0)'
+            ? { ok: true, msg: 'Tabriklaymiz! 26-darsning barcha 10 ta sinovidan o‘tdingiz!' }
+            : { ok: false, msg: '.badge ichiga color: green; yozing.' };
+        }
+      }
+    ];
+
+    const tasks27 = [
+      {
+        id: 't27_1',
+        title: '1. rem birligi (Root EM)',
+        desc: '<code>1rem = 16px</code>. Matn o‘lchamini <b>32px</b> ga teng bo‘lishi uchun <code>rem</code> qiymatini yozing.',
+        html: `<p class="rem-text" style="margin:0; font-weight:bold;">Men 2rem (32px) bo‘lishim kerak</p>`,
+        initialCss: `.rem-text {\n  font-size: 1rem;\n}`,
+        check: (el) => {
+          const fs = getComputedStyle(el.querySelector('.rem-text')).fontSize;
+          return fs === '32px'
+            ? { ok: true, msg: 'To‘g‘ri! 2rem × 16px = 32px.' }
+            : { ok: false, msg: `Hozir ${fs}. 32px bo‘lishi uchun 2rem yozing.` };
+        }
+      },
+      {
+        id: 't27_2',
+        title: '2. em birligi (Ota elementga nisbatan)',
+        desc: 'Ota element shrifti <code>20px</code>. Ichidagi matn <b>30px</b> chiqishi uchun <code>em</code> qiymatini yozing.',
+        html: `<div style="font-size: 20px;"><span class="em-text" style="font-weight:bold;">Men 1.5em (30px) man</span></div>`,
+        initialCss: `.em-text {\n  font-size: 1em;\n}`,
+        check: (el) => {
+          const fs = getComputedStyle(el.querySelector('.em-text')).fontSize;
+          return fs === '30px'
+            ? { ok: true, msg: 'Ajoyib! 1.5em × 20px (ota) = 30px.' }
+            : { ok: false, msg: `Hozir ${fs}. 20px × 1.5 = 30px bo‘lishi uchun 1.5em yozing.` };
+        }
+      },
+      {
+        id: 't27_3',
+        title: '3. Foiz (%) birligi',
+        desc: 'Yuklanish chizig‘i (<code>.bar-fill</code>) enini <b>80%</b> qiling.',
+        html: `<div style="width:100%; height:20px; background:#cbd5e1; border-radius:10px; overflow:hidden;"><div class="bar-fill" style="height:100%; background:#2563eb;"></div></div>`,
+        initialCss: `.bar-fill {\n  width: 30%;\n}`,
+        check: (el, rawCss) => {
+          const has80 = /width\s*:\s*80%/.test(rawCss);
+          return has80
+            ? { ok: true, msg: 'To‘g‘ri! Chiziq otasining 80% qismini egalladi.' }
+            : { ok: false, msg: 'width: 80%; qilib o‘zgartiring.' };
+        }
+      },
+      {
+        id: 't27_4',
+        title: '4. CSS Variables (:root va var())',
+        desc: '<code>--my-bg</code> o‘zgaruvchisini <b>green</b> qilib belgilang va tugmada <code>var(--my-bg)</code> dan foydalaning.',
+        html: `<div class="var-scope"><button class="var-btn" style="color:white; padding:10px 18px; border:none; border-radius:6px; font-weight:bold;">Variable Tugma</button></div>`,
+        initialCss: `.var-scope {\n  --my-bg: orange;\n}\n.var-btn {\n  background-color: var(--my-bg);\n}`,
+        check: (el) => {
+          const bg = getComputedStyle(el.querySelector('.var-btn')).backgroundColor;
+          return bg === 'rgb(0, 128, 0)'
+            ? { ok: true, msg: 'Mukammal! CSS Variable orqali rangni boshqardingiz.' }
+            : { ok: false, msg: '--my-bg o‘zgaruvchisiga green qiymatini bering.' };
+        }
+      }
+    ];
+
+    const passedSet = new Set();
+
+    function renderTasks(list, containerId) {
+      const container = document.getElementById(containerId);
+      list.forEach(task => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.id = `card_${task.id}`;
+        card.innerHTML = `
+          <div class="card-header">
+            <h3>${task.title}</h3>
+            <span class="status-pill" id="pill_${task.id}">Kutilmoqda</span>
+          </div>
+          <p class="task-desc">${task.desc}</p>
+          <div class="preview-box" id="prev_${task.id}">
+            <style id="style_${task.id}"></style>
+            <div class="scope_${task.id}" style="width:100%; display:flex; justify-content:center;">
+              ${task.html}
+            </div>
+          </div>
+          <textarea class="code-editor" id="code_${task.id}" spellcheck="false">${task.initialCss}</textarea>
+          <div class="actions">
+            <button class="btn-check" onclick="checkTask('${task.id}')">✅ Tekshirish (Check)</button>
+            <button class="btn-reset" onclick="resetTask('${task.id}')">↺ Qaytarish</button>
+          </div>
+          <div class="feedback" id="fb_${task.id}"></div>
+        `;
+        container.appendChild(card);
+
+        const textarea = document.getElementById(`code_${task.id}`);
+        textarea.addEventListener('input', () => applyScopedCss(task.id));
+        applyScopedCss(task.id);
+      });
+    }
+
+    // Har bir kartochka CSS ini faqat o'zining preview qutisiga qo'llash (boshqa kartochkalarga ta'sir qilmasligi uchun)
+    function applyScopedCss(taskId) {
+      const raw = document.getElementById(`code_${taskId}`).value;
+      const styleTag = document.getElementById(`style_${taskId}`);
+      // Oddiy va xavfsiz scoping: har bir qoida oldiga .scope_id qo'shish
+      const scoped = raw.replace(/([^{}]+)\{/g, (match, selector) => {
+        const parts = selector.split(',').map(s => `.scope_${taskId} ${s.trim()}`);
+        return `${parts.join(', ')} {`;
+      });
+      styleTag.textContent = scoped;
+    }
+
+    function checkTask(taskId) {
+      const allTasks = [...tasks26, ...tasks27];
+      const task = allTasks.find(t => t.id === taskId);
+      const previewEl = document.getElementById(`prev_${taskId}`);
+      const rawCss = document.getElementById(`code_${taskId}`).value;
+      const fb = document.getElementById(`fb_${taskId}`);
+      const pill = document.getElementById(`pill_${taskId}`);
+
+      const res = task.check(previewEl, rawCss);
+      fb.textContent = res.msg;
+      fb.className = 'feedback ' + (res.ok ? 'ok' : 'err');
+
+      if (res.ok) {
+        passedSet.add(taskId);
+        pill.textContent = '✓ Bajarildi';
+        pill.classList.add('passed');
+      } else {
+        passedSet.delete(taskId);
+        pill.textContent = 'Xato';
+        pill.classList.remove('passed');
+      }
+      document.getElementById('total-score').textContent = `Natija: ${passedSet.size} / 14`;
+    }
+
+    function resetTask(taskId) {
+      const allTasks = [...tasks26, ...tasks27];
+      const task = allTasks.find(t => t.id === taskId);
+      document.getElementById(`code_${taskId}`).value = task.initialCss;
+      applyScopedCss(taskId);
+      document.getElementById(`fb_${taskId}`).className = 'feedback';
+    }
+
+    // Jonli Specificity Kalkulyator
+    function calculateSpec() {
+      const sel = document.getElementById('spec-input').value.trim();
+      if (!sel) {
+        document.getElementById('spec-output').textContent = '(ID: 0, Class: 0, Tag: 0) → Ball: 0';
+        return;
+      }
+      const ids = (sel.match(/#[a-zA-Z0-9_-]+/g) || []).length;
+      const classes = (sel.match(/\.[a-zA-Z0-9_-]+|\[[^\]]+\]|:[a-zA-Z-]+/g) || []).length;
+      const cleaned = sel
+        .replace(/#[a-zA-Z0-9_-]+/g, '')
+        .replace(/\.[a-zA-Z0-9_-]+/g, '')
+        .replace(/\[[^\]]+\]/g, '')
+        .replace(/:[a-zA-Z-]+/g, '')
+        .replace(/[>+~*]/g, ' ');
+      const tags = cleaned.split(/\s+/).filter(Boolean).length;
+
+      const total = ids * 100 + classes * 10 + tags;
+      document.getElementById('spec-output').textContent =
+        `(ID: ${ids}, Class: ${classes}, Tag: ${tags}) → Ball: ${total}`;
+    }
+
+    function openLesson(lessonId, btn) {
+      document.querySelectorAll('.lesson-section').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(lessonId).classList.add('active');
+      btn.classList.add('active');
+    }
+
+    function setTheme(theme) {
+      if (theme === 'light') document.documentElement.removeAttribute('data-theme');
+      else document.documentElement.setAttribute('data-theme', theme);
+    }
+
+    // Sahifa yuklanganda ishga tushirish
+    renderTasks(tasks26, 'tasks-26-container');
+    renderTasks(tasks27, 'tasks-27-container');
+  </script>
+</body>
+</html>
